@@ -1,4 +1,4 @@
-CREATE PROCEDURE sp_Report_Shipment_Container_Level
+ALTER PROCEDURE sp_Report_Shipment_Container_Level
     @CurrentCountry CHAR(2),
     @CompanyPK uniqueidentifier,
     @TransportMode VARCHAR(255),
@@ -34,10 +34,11 @@ BEGIN
             Consignee.FullName AS Consignee,
             Carrier.OH_FullName AS Carrier,
             JC.JC_ContainerNum AS ContainerNum,
-            RC.RC_StorageClass AS ContainerTypeCode,
+            RC.RC_Code AS ContainerTypeCode,
             JC.JC_GrossWeight As GrossWeight,
             JL.JL_ActualVolume AS M3,
             CF_PTS.XV_Data AS InforPTSNumber,
+            JK.JK_AgentsReference AS AgentsReference,
             JD.JS_JobDate
 
         FROM dbo.csfn_JobShipmentsWithDirectionCompanyBased(@CurrentCountry, @CompanyPK) JS
@@ -107,6 +108,7 @@ BEGIN
 
         WHERE
             JC.JC_ContainerNum IS NOT NULL
+            AND NULLIF(LTRIM(RTRIM(RC.RC_Code)), '') IS NOT NULL
             AND (@TransportMode = '' OR JS.JS_TransportMode = @TransportMode)
             AND
             (
@@ -139,7 +141,6 @@ BEGIN
                 OR @JobType = ''
                 OR @JobType = 'ALL JOB'
                 OR (@JobType = 'KM Job'     AND CF_PTS.XV_Data IS NOT NULL)
-                OR (@JobType = 'Non KM Job' AND CF_PTS.XV_Data IS NULL)
             )
     )
 
@@ -161,7 +162,8 @@ BEGIN
         Carrier,
         GrossWeight,
         SUM(M3) AS M3,
-        InforPTSNumber
+        InforPTSNumber,
+        AgentsReference
     FROM Base
     GROUP BY
         POL,
@@ -180,6 +182,7 @@ BEGIN
         ContainerTypeCode,
         Carrier,
         GrossWeight,
-        InforPTSNumber
+        InforPTSNumber,
+        AgentsReference
 
 END
