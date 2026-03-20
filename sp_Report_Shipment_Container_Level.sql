@@ -140,7 +140,8 @@ BEGIN
                 @JobType IS NULL
                 OR @JobType = ''
                 OR @JobType = 'ALL JOB'
-                OR (@JobType = 'KM Job'     AND CF_PTS.XV_Data IS NOT NULL)
+                OR (@JobType = 'KM Job' AND CF_PTS.XV_Data IS NOT NULL)
+                OR (@JobType = 'DISCO Job' AND Consignor.OH_Code = 'DISCOTYO')
             )
     )
 
